@@ -66,7 +66,7 @@ router.get( '/getHtml', async (ctx, next) => {
 
 router.post( '/uploadImage' , koaBody(), async (ctx,next) => {
     var body = ctx.request.body;
-    base64Img.img(body.img, 'dest', 'uploadedimage', function(err, filepath) {
+    base64Img.img(body.img, 'webservice/dest', 'uploadedimage', function(err, filepath) {
         if(err) {
             console.log(err);
         }

@@ -1,3 +1,4 @@
 import { detectRectangles } from './detectRectangles';
+import { generateHtml } from './codegen/html';
 
-console.log(detectRectangles('image.jpg'));
+generateHtml(detectRectangles('image2.jpg'));

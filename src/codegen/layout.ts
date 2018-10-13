@@ -159,7 +159,7 @@ function simplify(nodes: Node) {
         delete element.parent;
         return newEl;
     }).sort((a, b) => {
-        return a.x + a.y * 3000 - b.x + b.y * 3000;
+        return a.x * 3 + a.y - b.x * 3 + b.y;
     });
     delete retNode.parent;
     return retNode;
@@ -168,7 +168,9 @@ function simplify(nodes: Node) {
 export function generateLayout(rootNode: Node): Layout {
     const simpleNodes = simplify(rootNode);
 
-    const layout = splitHorizontal(simpleNodes.children, simpleNodes.x, simpleNodes.y, simpleNodes.width, simpleNodes.height);
+    const layout = splitVertical(simpleNodes.children, simpleNodes.x, simpleNodes.y, simpleNodes.width, simpleNodes.height);
+
+    console.log(JSON.stringify(layout));
 
     return layout;
 }

@@ -9,22 +9,19 @@ div: {
 }
 
 .box {
+    background-color: red;
     display: inline-block;
-    border: 2px solid black;
-    padding: 10px;
     float: left;
 }
 
 .hsplit {
-    border: 2px solid black;
-    width: 100%;
-    padding: 10px;
+    background-color: green;
+    float: left;
 }
 
 .vsplit {
-    border: 2px solid black;
-    height: 100%;
-    padding: 10px;
+    background-color: blue;
+    float: left;
 }
 `;
 }

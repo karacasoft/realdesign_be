@@ -4,7 +4,7 @@ const cv = require("opencv4nodejs");
 function detectRectangles(imageFile) {
     const originalImg = cv.imread(imageFile, 0);
     const img = originalImg;
-    const threshold = img.adaptiveThreshold(255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY_INV, 11, 3);
+    const threshold = img.adaptiveThreshold(255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY_INV, 75, 10);
     //const threshold = new cv.Mat(img.rows, img.cols, 0, 255).sub(img.threshold(120, 255, cv.THRESH_BINARY));
     cv.imwrite('image.bin.jpg', threshold);
     const kernelLength = 20;
@@ -23,8 +23,7 @@ function detectRectangles(imageFile) {
     const img_final_bin = img_temp_bin.bitwiseNot().erode(kernel, new cv.Point2(-1, -1), 2)
         .threshold(0, 255, cv.THRESH_BINARY | cv.THRESH_OTSU);
     cv.imwrite('image.final.jpg', img_final_bin);
-    const contours = img_final_bin.findContours(cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
-        .filter(val => val.boundingRect().width > 30 && val.boundingRect().height > 30);
+    const contours = img_final_bin.findContours(cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE);
     //img.drawContours(contours, new cv.Vec3(255, 255, 0));
     const contoursStructured = [];
     let i = 0;
@@ -45,6 +44,8 @@ function detectRectangles(imageFile) {
     });
     i = 0;
     contours.forEach(val => {
+        if (val.boundingRect().width < 30 && val.boundingRect().height < 30)
+            return;
         if (val.hierarchy.z !== -1) {
             contoursStructured[val.hierarchy.z].children.push(contoursStructured[i]);
             contoursStructured[i].parent = contoursStructured[val.hierarchy.z];

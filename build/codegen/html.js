@@ -1,127 +1,92 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-function collidesVertically(node1, node2) {
-    return !((node1.y < node2.y && node1.y + node1.height < node2.y) ||
-        (node1.y > node2.y + node2.height && node1.y + node1.height > node2.y + node2.height));
+const layout_1 = require("./layout");
+function generateCss() {
+    return `
+div: {
+    margin: 0;
+    padding: 0;
 }
-function collidesHorizontally(node1, node2) {
-    return !((node1.x < node2.x && node1.x + node1.width < node2.x) ||
-        (node1.x > node2.x + node2.width && node1.x + node1.width > node2.x + node2.width));
+
+.box {
+    display: inline-block;
+    border: 2px solid black;
+    padding: 10px;
+    float: left;
 }
-function splitHorizontal(nodes, parentX, parentWidth) {
-    const subNodes = [];
-    const subNodes2 = [];
-    let prevNode = nodes[0];
-    let splitted = false;
-    let minY = Infinity;
-    let maxY = 0;
-    let minY2 = Infinity;
-    let maxY2 = 0;
-    if (nodes.length === 1) {
-        return {
-            x: nodes[0].x,
-            y: nodes[0].y,
-            width: nodes[0].width,
-            height: nodes[0].height,
-            children: []
-        };
-    }
-    for (let nI in nodes) {
-        if (!splitted && collidesVertically(prevNode, nodes[nI])) {
-            subNodes.push(nodes[nI]);
-            minY = Math.min(nodes[nI].y, minY);
-            maxY = Math.max(nodes[nI].y + nodes[nI].height, maxY);
-        }
-        else {
-            splitted = true;
-            subNodes2.push(nodes[nI]);
-            minY2 = Math.min(nodes[nI].y, minY2);
-            maxY2 = Math.max(nodes[nI].y + nodes[nI].height, maxY2);
-        }
-        prevNode = nodes[nI];
-    }
-    if (!splitted) {
-        return splitVertical(subNodes, minY, maxY - minY);
-    }
-    return {
-        x: parentX,
-        y: minY,
-        width: parentWidth,
-        height: maxY2,
-        percentages: [(maxY2 - minY2) / (maxY2 - minY), (maxY - minY) / (maxY2 - minY)],
-        children: [
-            splitVertical(subNodes, minY, maxY - minY),
-            splitHorizontal(subNodes2, parentX, parentWidth)
-        ]
-    };
+
+.hsplit {
+    border: 2px solid black;
+    width: 100%;
+    padding: 10px;
 }
-function splitVertical(nodes, parentY, parentHeight) {
-    const subNodes = [];
-    const subNodes2 = [];
-    let prevNode = nodes[0];
-    let splitted = false;
-    let minX = Infinity;
-    let maxX = 0;
-    let minX2 = Infinity;
-    let maxX2 = 0;
-    if (nodes.length === 1) {
-        return {
-            x: nodes[0].x,
-            y: nodes[0].y,
-            width: nodes[0].width,
-            height: nodes[0].height,
-            children: []
-        };
-    }
-    for (let nI in nodes) {
-        if (!splitted && collidesHorizontally(prevNode, nodes[nI])) {
-            subNodes.push(nodes[nI]);
-            minX = Math.min(nodes[nI].x, minX);
-            maxX = Math.max(nodes[nI].x + nodes[nI].width, maxX);
-        }
-        else {
-            splitted = true;
-            subNodes2.push(nodes[nI]);
-            minX2 = Math.min(nodes[nI].x, minX2);
-            maxX2 = Math.max(nodes[nI].x + nodes[nI].width, maxX2);
-        }
-        prevNode = nodes[nI];
-    }
-    if (!splitted) {
-        return splitHorizontal(subNodes, minX, maxX2 - minX);
-    }
-    return {
-        x: minX,
-        y: parentY,
-        width: maxX2,
-        height: parentHeight,
-        percentages: [(maxX2 - minX2) / (maxX2 - minX), (maxX - minX) / (maxX2 - minX)],
-        children: [
-            splitHorizontal(subNodes, minX, maxX - minX),
-            splitVertical(subNodes2, parentY, parentHeight)
-        ]
-    };
+
+.vsplit {
+    border: 2px solid black;
+    height: 100%;
+    padding: 10px;
 }
-function simplify(nodes) {
-    let retNode = nodes;
-    while (retNode.children.length === 1) {
-        retNode = retNode.children[0];
-    }
-    retNode.children = retNode.children.map(element => {
-        const newEl = simplify(element);
-        delete element.parent;
-        return newEl;
-    }).sort((a, b) => {
-        return a.x + a.y * 3000 - b.x + b.y * 3000;
+`;
+}
+function generateBox(layout) {
+    let childrenCode = "";
+    layout.children.forEach(val => {
+        childrenCode += generateCode(val);
     });
-    delete retNode.parent;
-    return retNode;
+    return `
+<div class="box" style="width: ${layout.width}px; height: ${layout.height}px; margin-left: ${layout.marginLeft}px; margin-top: ${layout.marginTop}px">
+${childrenCode}
+</div>
+`;
+}
+function generateHSplit(layout) {
+    let childrenCode = "";
+    layout.children.forEach(val => {
+        childrenCode += generateCode(val);
+    });
+    return `
+<div class="hsplit" style="width: ${layout.width}px; height: ${layout.height}px; margin-left: ${layout.marginLeft}px; margin-top: ${layout.marginTop}px">
+${childrenCode}
+</div>
+`;
+}
+function generateVSplit(layout) {
+    let childrenCode = "";
+    layout.children.forEach(val => {
+        childrenCode += generateCode(val);
+    });
+    return `
+<div class="vsplit" style="width: ${layout.width}px; height: ${layout.height}px; margin-left: ${layout.marginLeft}px; margin-top: ${layout.marginTop}px">
+${childrenCode}
+</div>
+`;
+}
+function generateCode(layout) {
+    if (layout.type === layout_1.LayoutType.LAYOUT) {
+        return generateBox(layout);
+    }
+    else if (layout.type === layout_1.LayoutType.VSPLIT) {
+        return generateVSplit(layout);
+    }
+    else if (layout.type === layout_1.LayoutType.HSPLIT) {
+        return generateHSplit(layout);
+    }
 }
 function generateHtml(nodes) {
-    const simpleNodes = simplify(nodes);
-    console.log(simpleNodes);
-    const layout = splitHorizontal(simpleNodes.children, simpleNodes.x, simpleNodes.x + simpleNodes.width);
-    console.log(layout);
+    const layout = layout_1.generateLayout(nodes);
+    return `
+<html>
+    <head>
+        <title>Real Design Website</title>
+        <style>
+        ${generateCss()}
+        </style>
+    </head>
+    <body>
+        ${generateCode(layout)}
+    </body>
+</html>
+`;
 }
 exports.generateHtml = generateHtml;
 //# sourceMappingURL=html.js.map

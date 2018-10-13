@@ -1,4 +1,4 @@
-const Koa = require('Koa')
+const Koa = require('koa')
 const app = new Koa()
 
 const Router = require('koa-router')
@@ -35,7 +35,7 @@ router.get( '/abc' , async (ctx,next) => {
 
 router.post( '/detect' , koaBody(), async (ctx,next) => {
     var body = ctx.request.body;
-    console.log("body i yazıyor")
+    console.log("body i yazıyor2")
     console.log(JSON.stringify(body));
     //base64Img.img(body.img, 'dest', '2', function(err, filepath) {});
     ctx.body = "wow";

@@ -23,7 +23,8 @@ function detectRectangles(imageFile) {
     const img_final_bin = img_temp_bin.bitwiseNot().erode(kernel, new cv.Point2(-1, -1), 2)
         .threshold(0, 255, cv.THRESH_BINARY | cv.THRESH_OTSU);
     cv.imwrite('image.final.jpg', img_final_bin);
-    const contours = img_final_bin.findContours(cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE);
+    const contours = img_final_bin.findContours(cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+        .filter(val => val.boundingRect().width > 30 && val.boundingRect().height > 30);
     //img.drawContours(contours, new cv.Vec3(255, 255, 0));
     const contoursStructured = [];
     let i = 0;

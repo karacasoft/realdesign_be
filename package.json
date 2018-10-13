@@ -9,6 +9,10 @@
   "author": "Mahmut Karaca",
   "license": "ISC",
   "dependencies": {
+    "@koa/cors": "^2.2.2",
+    "koa": "^2.5.3",
+    "koa-body": "^4.0.4",
+    "koa-router": "^7.4.0",
     "opencv4nodejs": "^4.9.0"
   },
   "devDependencies": {}

@@ -64,6 +64,13 @@ router.get( '/getHtml', async (ctx, next) => {
     };
 });
 
+router.get( '/preview', async (ctx) => {
+    const rectangles = detectRectangles('./webservice/dest/uploadedimage.jpg');
+    const html = generateHtml(rectangles);
+
+    ctx.body = html;
+});
+
 router.post( '/uploadImage' , koaBody(), async (ctx,next) => {
     var body = ctx.request.body;
     base64Img.img(body.img, 'webservice/dest', 'uploadedimage', function(err, filepath) {

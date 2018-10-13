@@ -24,7 +24,7 @@ function postFirstParagraph(ctx) {
   }
 */
 
-router.get( '/abc' , async (ctx,next) => {
+router.get( '/getBoxTree' , async (ctx,next) => {
     //var body = ctx.request.body;
     console.log("body i yazıyor")
     //base64Img.img(body.img, 'dest', '2', function(err, filepath) {});
@@ -33,7 +33,7 @@ router.get( '/abc' , async (ctx,next) => {
     //ctx.redirect("http://localhost:8000");
 });
 
-router.post( '/detect' , koaBody(), async (ctx,next) => {
+router.post( '/uploadImage' , koaBody(), async (ctx,next) => {
     var body = ctx.request.body;
     console.log("body i yazıyor2")
     console.log(JSON.stringify(body));

@@ -32,6 +32,7 @@ app.use(async (ctx, next) => {
     try {
         await next();
     } catch(err) {
+        console.log(err.stack);
         ctx.status = 500;
         ctx.body = {
             status: 500,

@@ -12,6 +12,8 @@ export interface Layout {
     y: number;
     width: number;
     height: number;
+    marginLeft: number;
+    marginTop: number;
     children: Layout[];
 }
 
@@ -33,7 +35,7 @@ function collidesHorizontally(node1: Node, node2: Node): boolean {
         (node1.x > node2.x + node2.width && node1.x + node1.width > node2.x + node2.width));
 }
 
-function splitHorizontal(nodes: Node[], parentX: number, parentWidth: number): HSplit | Layout {
+function splitHorizontal(nodes: Node[], parentX: number, parentY: number, parentWidth: number, parentHeight: number): HSplit | Layout {
     const subNodes: Node[] = [];
     const subNodes2: Node[] = [];
     let prevNode = nodes[0];
@@ -51,6 +53,8 @@ function splitHorizontal(nodes: Node[], parentX: number, parentWidth: number): H
             y: nodes[0].y,
             width: nodes[0].width,
             height: nodes[0].height,
+            marginLeft: nodes[0].x - parentX,
+            marginTop: nodes[0].y - parentY,
             children: []
         };
     }
@@ -69,24 +73,26 @@ function splitHorizontal(nodes: Node[], parentX: number, parentWidth: number): H
         prevNode = nodes[nI];
     }
     if(!splitted) {
-        return splitVertical(subNodes, minY, maxY - minY);
+        return splitVertical(subNodes, parentX, parentY, parentWidth, parentHeight);
     }
     
     return {
         type: LayoutType.HSPLIT,
         x: parentX,
-        y: minY,
+        y: parentY,
         width: parentWidth,
-        height: maxY2,
+        height: parentHeight,
+        marginLeft: 0,
+        marginTop: 0,
         percentages: [ (maxY2 - minY2) / (maxY2 - minY), (maxY - minY) / (maxY2 - minY) ],
         children: [
-            splitVertical(subNodes, minY, maxY - minY),
-            splitHorizontal(subNodes2, parentX, parentWidth)
+            splitVertical(subNodes, parentX, parentY, parentWidth, maxY - parentY),
+            splitHorizontal(subNodes2, parentX, maxY, parentWidth, parentHeight - (maxY - parentY))
         ]
     };
 }
 
-function splitVertical(nodes: Node[], parentY: number, parentHeight: number): VSplit | Layout {
+function splitVertical(nodes: Node[], parentX: number, parentY: number, parentWidth: number, parentHeight: number): VSplit | Layout {
     const subNodes: Node[] = [];
     const subNodes2: Node[] = [];
     let prevNode = nodes[0];
@@ -104,6 +110,8 @@ function splitVertical(nodes: Node[], parentY: number, parentHeight: number): VS
             y: nodes[0].y,
             width: nodes[0].width,
             height: nodes[0].height,
+            marginLeft: nodes[0].x - parentX,
+            marginTop: nodes[0].y - parentY,
             children: []
         };
     }
@@ -122,19 +130,21 @@ function splitVertical(nodes: Node[], parentY: number, parentHeight: number): VS
         prevNode = nodes[nI];
     }
     if(!splitted) {
-        return splitHorizontal(subNodes, minX, maxX2 - minX);
+        return splitHorizontal(subNodes, parentX, parentY, parentWidth, parentHeight);
     }
     
     return {
         type: LayoutType.VSPLIT,
-        x: minX,
+        x: parentX,
         y: parentY,
-        width: maxX2,
+        width: parentWidth,
         height: parentHeight,
         percentages: [ (maxX2 - minX2) / (maxX2 - minX), (maxX - minX) / (maxX2 - minX) ],
+        marginLeft: 0,
+        marginTop: 0,
         children: [
-            splitHorizontal(subNodes, minX, maxX - minX),
-            splitVertical(subNodes2, parentY, parentHeight)
+            splitHorizontal(subNodes, parentX, parentY, maxX - parentX, parentHeight),
+            splitVertical(subNodes2, maxX, parentY, parentWidth - (maxX - parentX), parentHeight)
         ]
     };
 }
@@ -158,7 +168,7 @@ function simplify(nodes: Node) {
 export function generateLayout(rootNode: Node): Layout {
     const simpleNodes = simplify(rootNode);
 
-    const layout = splitHorizontal(simpleNodes.children, simpleNodes.x, simpleNodes.x + simpleNodes.width);
+    const layout = splitHorizontal(simpleNodes.children, simpleNodes.x, simpleNodes.y, simpleNodes.width, simpleNodes.height);
 
     return layout;
 }

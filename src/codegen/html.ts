@@ -12,6 +12,7 @@ div: {
     display: inline-block;
     border: 2px solid black;
     padding: 10px;
+    float: left;
 }
 
 .hsplit {
@@ -34,31 +35,31 @@ function generateBox(layout: Layout): string {
         childrenCode += generateCode(val);
     });
     return `
-<div class="box" style="width: 100px; height: 100px">
+<div class="box" style="width: ${layout.width}px; height: ${layout.height}px; margin-left: ${layout.marginLeft}px; margin-top: ${layout.marginTop}px">
 ${childrenCode}
 </div>
 `
 }
 
-function generateHSplit(split: HSplit): string {
+function generateHSplit(layout: HSplit): string {
     let childrenCode: string = "";
-    split.children.forEach(val => {
+    layout.children.forEach(val => {
         childrenCode += generateCode(val);
     });
     return `
-<div class="hsplit">
+<div class="hsplit" style="width: ${layout.width}px; height: ${layout.height}px; margin-left: ${layout.marginLeft}px; margin-top: ${layout.marginTop}px">
 ${childrenCode}
 </div>
 `
 }
 
-function generateVSplit(split: VSplit): string {
+function generateVSplit(layout: VSplit): string {
     let childrenCode: string = "";
-    split.children.forEach(val => {
+    layout.children.forEach(val => {
         childrenCode += generateCode(val);
     });
     return `
-<div class="vsplit">
+<div class="vsplit" style="width: ${layout.width}px; height: ${layout.height}px; margin-left: ${layout.marginLeft}px; margin-top: ${layout.marginTop}px">
 ${childrenCode}
 </div>
 `

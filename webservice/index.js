@@ -13,6 +13,10 @@ app.use(cors({
 
 var base64Img = require('base64-img');
 
+const { detectRectangles } = require('../build/detectRectangles.js');
+const { generateHtml } = require('../build/codegen/html.js');
+const { generateLayout } = require('../build/codegen/layout.js');
+
 /** 
 function postFirstParagraph(ctx) {
     return new Promise((fulfill, reject) => {
@@ -24,23 +28,49 @@ function postFirstParagraph(ctx) {
   }
 */
 
+app.use(async (ctx, next) => {
+    try {
+        await next();
+    } catch(err) {
+        ctx.status = 500;
+        ctx.body = {
+            status: 500,
+            message: "Bir hata oldu."
+        };
+        app.emit(err);
+    }
+});
+
 router.get( '/getBoxTree' , async (ctx,next) => {
-    //var body = ctx.request.body;
-    console.log("body i yazıyor")
-    //base64Img.img(body.img, 'dest', '2', function(err, filepath) {});
-    ctx.body = "wow";
-    //const results = await postFirstParagraph(ctx);
-    //ctx.redirect("http://localhost:8000");
+    const rectangles = detectRectangles('./webservice/dest/uploadedimage.jpg');
+    const layout = generateLayout(rectangles);
+
+    ctx.body = {
+        status: 200,
+        message: "Successful",
+        layout
+    };
+});
+
+router.get( '/getHtml', async (ctx, next) => {
+    const rectangles = detectRectangles('./webservice/dest/uploadedimage.jpg');
+    const html = generateHtml(rectangles);
+
+    ctx.body = {
+        status: 200,
+        message: "Successful",
+        html
+    };
 });
 
 router.post( '/uploadImage' , koaBody(), async (ctx,next) => {
     var body = ctx.request.body;
-    console.log("body i yazıyor2")
-    console.log(JSON.stringify(body));
-    base64Img.img(body.img, 'dest', '2', function(err, filepath) {});
-    ctx.body = "wow";
-    //const results = await postFirstParagraph(ctx);
-    //ctx.redirect("http://localhost:8000");
+    base64Img.img(body.img, 'dest', 'uploadedimage', function(err, filepath) {});
+
+    ctx.body = {
+        status: 200,
+        message: "Successful"
+    };
 });
 
 app.use(router.routes())

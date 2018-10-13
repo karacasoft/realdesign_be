@@ -1,2 +1,2 @@
 import { Node } from "../detectRectangles";
-export declare function generateHtml(nodes: Node): void;
+export declare function generateHtml(nodes: Node): string;

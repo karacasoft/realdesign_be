@@ -37,7 +37,7 @@ router.post( '/detect' , koaBody(), async (ctx,next) => {
     var body = ctx.request.body;
     console.log("body i yazıyor2")
     console.log(JSON.stringify(body));
-    //base64Img.img(body.img, 'dest', '2', function(err, filepath) {});
+    base64Img.img(body.img, 'dest', '2', function(err, filepath) {});
     ctx.body = "wow";
     //const results = await postFirstParagraph(ctx);
     //ctx.redirect("http://localhost:8000");

@@ -1,140 +1,94 @@
 import { Node } from "../detectRectangles";
-import { Layout, HSplit, VSplit } from "./layout";
+import { generateLayout, Layout, HSplit, VSplit, LayoutType } from "./layout";
 
-function collidesVertically(node1: Node, node2: Node): boolean {
-    return !((node1.y < node2.y && node1.y + node1.height < node2.y) ||
-        (node1.y > node2.y + node2.height && node1.y + node1.height > node2.y + node2.height));
+function generateCss(): string {
+    return `
+div: {
+    margin: 0;
+    padding: 0;
 }
 
-function collidesHorizontally(node1: Node, node2: Node): boolean {
-    return !((node1.x < node2.x && node1.x + node1.width < node2.x) ||
-        (node1.x > node2.x + node2.width && node1.x + node1.width > node2.x + node2.width));
+.box {
+    display: inline-block;
+    border: 2px solid black;
+    padding: 10px;
 }
 
-function splitHorizontal(nodes: Node[], parentX: number, parentWidth: number): HSplit | Layout {
-    const subNodes: Node[] = [];
-    const subNodes2: Node[] = [];
-    let prevNode = nodes[0];
-    let splitted: boolean = false;
-    
-    let minY: number = Infinity;
-    let maxY: number = 0;
-    let minY2: number = Infinity;
-    let maxY2: number = 0;
-
-    if(nodes.length === 1) {
-        return {
-            x: nodes[0].x,
-            y: nodes[0].y,
-            width: nodes[0].width,
-            height: nodes[0].height,
-            children: []
-        };
-    }
-
-    for(let nI in nodes) {
-        if(!splitted && collidesVertically(prevNode, nodes[nI])) {
-            subNodes.push(nodes[nI]);
-            minY = Math.min(nodes[nI].y, minY);
-            maxY = Math.max(nodes[nI].y + nodes[nI].height, maxY);
-        } else {
-            splitted = true;
-            subNodes2.push(nodes[nI]);
-            minY2 = Math.min(nodes[nI].y, minY2);
-            maxY2 = Math.max(nodes[nI].y + nodes[nI].height, maxY2);
-        }
-        prevNode = nodes[nI];
-    }
-    if(!splitted) {
-        return splitVertical(subNodes, minY, maxY - minY);
-    }
-    
-    return {
-        x: parentX,
-        y: minY,
-        width: parentWidth,
-        height: maxY2,
-        percentages: [ (maxY2 - minY2) / (maxY2 - minY), (maxY - minY) / (maxY2 - minY) ],
-        children: [
-            splitVertical(subNodes, minY, maxY - minY),
-            splitHorizontal(subNodes2, parentX, parentWidth)
-        ]
-    };
+.hsplit {
+    border: 2px solid black;
+    width: 100%;
+    padding: 10px;
 }
 
-function splitVertical(nodes: Node[], parentY: number, parentHeight: number): VSplit | Layout {
-    const subNodes: Node[] = [];
-    const subNodes2: Node[] = [];
-    let prevNode = nodes[0];
-    let splitted: boolean = false;
-
-    let minX: number = Infinity;
-    let maxX: number = 0;
-    let minX2: number = Infinity;
-    let maxX2: number = 0;
-
-    if(nodes.length === 1) {
-        return {
-            x: nodes[0].x,
-            y: nodes[0].y,
-            width: nodes[0].width,
-            height: nodes[0].height,
-            children: []
-        };
-    }
-
-    for(let nI in nodes) {
-        if(!splitted && collidesHorizontally(prevNode, nodes[nI])) {
-            subNodes.push(nodes[nI]);
-            minX = Math.min(nodes[nI].x, minX);
-            maxX = Math.max(nodes[nI].x + nodes[nI].width, maxX);
-        } else {
-            splitted = true;
-            subNodes2.push(nodes[nI]);
-            minX2 = Math.min(nodes[nI].x, minX2);
-            maxX2 = Math.max(nodes[nI].x + nodes[nI].width, maxX2);
-        }
-        prevNode = nodes[nI];
-    }
-    if(!splitted) {
-        return splitHorizontal(subNodes, minX, maxX2 - minX);
-    }
-    
-    return {
-        x: minX,
-        y: parentY,
-        width: maxX2,
-        height: parentHeight,
-        percentages: [ (maxX2 - minX2) / (maxX2 - minX), (maxX - minX) / (maxX2 - minX) ],
-        children: [
-            splitHorizontal(subNodes, minX, maxX - minX),
-            splitVertical(subNodes2, parentY, parentHeight)
-        ]
-    };
+.vsplit {
+    border: 2px solid black;
+    height: 100%;
+    padding: 10px;
+}
+`;
 }
 
-function simplify(nodes: Node) {
-    let retNode: Node = nodes;
-    while(retNode.children.length === 1) {
-        retNode = retNode.children[0];
-    }
-    retNode.children = retNode.children.map(element => {
-        const newEl = simplify(element);
-        delete element.parent;
-        return newEl;
-    }).sort((a, b) => {
-        return a.x + a.y * 3000 - b.x + b.y * 3000;
+function generateBox(layout: Layout): string {
+    let childrenCode: string = "";
+    layout.children.forEach(val => {
+        childrenCode += generateCode(val);
     });
-    delete retNode.parent;
-    return retNode;
+    return `
+<div class="box" style="width: 100px; height: 100px">
+${childrenCode}
+</div>
+`
 }
 
-export function generateHtml(nodes: Node) {
-    const simpleNodes = simplify(nodes);
+function generateHSplit(split: HSplit): string {
+    let childrenCode: string = "";
+    split.children.forEach(val => {
+        childrenCode += generateCode(val);
+    });
+    return `
+<div class="hsplit">
+${childrenCode}
+</div>
+`
+}
 
-    console.log(simpleNodes);
+function generateVSplit(split: VSplit): string {
+    let childrenCode: string = "";
+    split.children.forEach(val => {
+        childrenCode += generateCode(val);
+    });
+    return `
+<div class="vsplit">
+${childrenCode}
+</div>
+`
+}
 
-    const layout = splitHorizontal(simpleNodes.children, simpleNodes.x, simpleNodes.x + simpleNodes.width);
+function generateCode(layout: Layout): string {
+    if(layout.type === LayoutType.LAYOUT) {
+        return generateBox(layout);
+    } else if(layout.type === LayoutType.VSPLIT) {
+        return generateVSplit(layout as VSplit);
+    } else if(layout.type === LayoutType.HSPLIT) {
+        return generateHSplit(layout as HSplit);
+    }
+}
 
-    console.log(layout);
+export function generateHtml(nodes: Node): string {
+    const layout = generateLayout(nodes);
+
+    return `
+<html>
+    <head>
+        <title>Real Design Website</title>
+        <style>
+        ${generateCss()}
+        </style>
+    </head>
+    <body>
+        ${generateCode(layout)}
+    </body>
+</html>
+`;
+
 }

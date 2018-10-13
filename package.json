@@ -7,5 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Mahmut Karaca",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "opencv4nodejs": "^4.9.0"
+  },
+  "devDependencies": {}
 }
